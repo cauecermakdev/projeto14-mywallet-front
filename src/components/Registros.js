@@ -1,8 +1,10 @@
 import styled from "styled-components"
 import GlobalStyle from "../GlobalStyle"
 import axios from "axios";
-import Login_context from "../providers/loginContext";
-import { useContext } from "react";
+import LoginContext from "../providers/loginContext";
+import { useContext, useEffect, useState } from "react";
+import { useInRouterContext } from "react-router-dom";
+
 
 
 
@@ -27,31 +29,84 @@ import { useContext } from "react";
     }
 ] */
 
-const { user, setUser } = useContext(Login_context); 
-const config = {
-    headers: { Authorization: `Bearer ${user.token}` }
-}
+
+
+
+
+
 
 //recebe dados  bd
 let array = [];
 
-function arrayDadosHistoricoDoUsuario(){
-     const requisicao =  axios.get("http://localhost:5000/historico", null, config);
-     
-     requisicao.then((req,res)=>{
+/* function arrayDadosHistoricoDoUsuario() {
+    const requisicao = axios.get("http://localhost:5000/historico", null, config);
+
+    requisicao.then((req, res) => {
         console.log("foi arrayHistorico");
 
     })
-    
-    requisicao.catch(err=> console.log(err));
-     console.log("array do usuario", array);
+
+    requisicao.catch(err => console.log(err));
+    console.log("array do usuario", array);
 }
 
-arrayDadosHistoricoDoUsuario();
+arrayDadosHistoricoDoUsuario(); */
 
 //______
 
 export default function Registros(params) {
+    const [transacoes, setTransacoes]  = useState([]);
+    const [addTransacao,setAddTransacao] =  useState(false);
+
+
+    /* const {email,password,token } = useContext(LoginContext); */
+    const {provider} = useContext(LoginContext);
+    console.log("Dentro de registro puxando os dados de LoginContext");
+ /*    console.log("email",email);
+    console.log("password",password);
+    console.log("token",token); */
+    console.log("provider", provider);
+
+    /* console.log(await db.collection("users").find({email:email}).toArray()); */
+    
+     /* let { user, setUser } = useContext(Login_context);  */
+     const user = {
+        token:"6954129c-2933-4d5b-ac2d-7658fa4051db",
+        nome:"juvenal",
+        email:"juvenal@gmail.com",
+        _id: "637bb31a63b4de980da02cba"
+     }
+     
+     
+
+    useEffect(() => {
+        
+         const config = {
+            headers: { 
+                authorization: `Bearer ${user.token}` ,
+                user:user
+            }
+        } 
+
+        const requisicao = axios.get("http://localhost:5000/historico",  
+        {
+            headers: { 
+                Authorization: `Bearer ${user.token}` ,
+                user
+            }
+        } 
+        );
+        
+        requisicao.then((resposta) => {
+            console.log('requisicao',resposta.data);
+            setTransacoes(resposta.data);
+
+        })
+
+        requisicao.catch(err => console.log(err));
+        console.log("array do usuario", array);
+
+    }, [addTransacao]);
 
     function calculaSaldo(array) {
 
@@ -70,26 +125,26 @@ export default function Registros(params) {
         <DataContainer>
             <GlobalStyle></GlobalStyle >
             <ContainerRegistros>
-            {array.map((dataIn, i) =>
-                <>
-                    <DataIn key={i} isEntrada={dataIn.isEntrada}>
-                        <div>
-                            <p className="data">{dataIn.data}</p>
-                            <p className="descricao" isEntrada={dataIn.isEntrada}>{dataIn.descricao}</p>
-                        </div>
-                        <p className="valor">{dataIn.valor}</p>
-                    </DataIn>
-                </>
-            
-            )
-            }
+                {transacoes.map((dataIn, i) =>
+                    
+                        <DataIn key={i} isentrada={dataIn.isEntrada}>
+                            <div>
+                                <p className="data">{dataIn.data}</p>
+                                <p className="descricao" isentrada={dataIn.isEntrada?1:0}>{dataIn.descricao}</p>
+                            </div>
+                            <p className="valor">{dataIn.valor}</p>
+                        </DataIn>
+                    
+
+                )
+                }
             </ContainerRegistros>
 
             <div className="saldo">
                 <p className="saldoTitle">SALDO</p>
-                <p className="saldoTotal" positivo={(calculaSaldo(array) > 0) ? true : false}>{calculaSaldo(array)}</p>
+                <p className="saldoTotal" positivo={(calculaSaldo(array) > 0)?1:0}>{calculaSaldo(array)}</p>
             </div>
-            
+
 
         </DataContainer>
     )
@@ -119,7 +174,7 @@ const DataIn = styled.div`
     }
 
     .valor{
-        color:${(props) => props.isEntrada ? "red" : "green"}
+        color:${(props) => props.isentrada ? "red" : "green"}
     }
 
     .descricao{

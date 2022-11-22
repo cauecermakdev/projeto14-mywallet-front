@@ -8,17 +8,19 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { useContext } from "react";
-import Login_context from "../providers/loginContext";
+import LoginContext from "../providers/loginContext";
 
+let objetoLogin; 
 
 export default function Login() {
     const [senha, setSenha] = useState("");
     const [email, setEmail] = useState("");
     const [token,setToken] = useState("");
-    
+    const [userName,setUserName] = useState("");
+    const [user,setUser] = useState({});
     const navigate = useNavigate();
 
-    const {user,setUser}  = useContext(Login_context);
+    /* const {user,setUser}  = useContext(Login_context); */
     /* console.log("aqui",user); */
 
     function estaPreenchido() {
@@ -51,9 +53,14 @@ export default function Login() {
             (resposta) => {
                 console.log(resposta);
                 setToken(resposta.data.token);
+                setUserName(resposta.data.userName);
+                setEmail(resposta.data.email);
+                setToken(resposta.data.token);
                 setUser({userName:resposta.data.userName, email:resposta.data.email, password:resposta.data.password ,token:resposta.data.token})
+                
                 navigate("/historico");
                 console.log("login resposta.data",resposta.data);
+                
             }
         );
 
@@ -61,10 +68,18 @@ export default function Login() {
             console.log(error);
             alert("Login ou Senha não correspondem");
         })
-
+        
     }
 
+   
+/*     objetoLogin = {
+        email:email,
+        password:senha,
+        token:resposta.data.token
+    } */
+
     return (
+        <LoginContext.Provider value = {{provider:"loginProvider"}}>
         <ContainerLogin>
             <GlobalStyle></GlobalStyle>
             <div className = "logo-style">MyWallet</div>
@@ -84,6 +99,7 @@ export default function Login() {
                 <CadastreLink>Primeira vez? Cadastre-se!</CadastreLink>
             </Link>
         </ContainerLogin>
+        </LoginContext.Provider>
     );
 };
 
